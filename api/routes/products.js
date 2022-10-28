@@ -3,12 +3,13 @@ const router = new express.Router();
 const mongoose = require('mongoose');
 const Product = require("../models/product");
 const  multer = require('multer'); // it is an alternative of body-parser and can be used to parse non URL encoded form data as well.
+const checkAuth = require("../middlewares/check_auth");
 
 const date = new Date()
 
 const storage = multer.diskStorage({
     destination: function(req,file,cb){
-        cb(null , './uploads/');
+        cb(null , './uploads');
     },
     filename: function(req,file,cb){
         cb(null,date.getTime().toString()+file.originalname)
@@ -66,8 +67,10 @@ router.get("/" ,(req,res,next)=>{   // we add / since request coming here will b
     })
 });
 
-router.post("/",upload.single('productImage'),(req,res,next)=>{  // we can pass as many arguments here as we want. Each argument is a middleware which is executed before the other one.
-    //console.log(req.file)
+//in the post request below we have added upload single before checkauth since checkAuth only accepts JSON data.
+//here we are getting data in form format and we need to parse it . Uploads middleware does the same for us. 
+
+router.post("/",upload.single('productImage'),checkAuth,(req,res,next)=>{  // we can pass as many arguments here as we want. Each argument is a middleware which is executed before the other one.
     const product = new Product({
         name: req.body.name,
         price: req.body.price,
@@ -96,7 +99,7 @@ router.post("/",upload.single('productImage'),(req,res,next)=>{  // we can pass 
 });
 
 
-router.get("/:productID",(req,res,next)=>{
+router.get("/:productID",checkAuth,(req,res,next)=>{
     const id = req.params.productID;
 //    Product.findById(id , (err , foundProduct)=>{
 //     if(err){
@@ -126,7 +129,7 @@ Product.findById(id)
 })
 });
 
-router.put("/:productID" , (req,res,next)=>{
+router.put("/:productID" , checkAuth, (req,res,next)=>{
     const id = req.params.productID;
     updateOps = {
         name: req.body.newName,
@@ -149,7 +152,7 @@ router.put("/:productID" , (req,res,next)=>{
     })
 })
 
-router.patch("/:productID",(req,res,next)=>{
+router.patch("/:productID", checkAuth,(req,res,next)=>{
     const id = req.params.productID;
     const updateOps = {};
      for(const ops of req.body){  // for this to work res.body must be an array .
@@ -178,7 +181,7 @@ router.patch("/:productID",(req,res,next)=>{
    
 });
 
-router.delete("/:productID",(req,res,next)=>{
+router.delete("/:productID",checkAuth,(req,res,next)=>{
     Product.remove({_id: req.params.productID} ) // we can also use findByIdAndRemove
     .exec()
     .then(results =>{

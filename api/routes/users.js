@@ -3,7 +3,7 @@ const router = new express.Router();
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const User = require('../models/user');
-const jwt = require('jsonwebtoken'); // jwt tokens are not encrypted but encoded using base 64 strings. s
+const jwt = require('jsonwebtoken'); // jwt tokens are not encrypted but encoded using base 64 strings. 
 
 const secretKey = "secret"; // must be used using environment variable. 
 
